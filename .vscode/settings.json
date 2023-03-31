@@ -1,31 +1,31 @@
 {
-	// "files.autoSaveDelay": 10,
-	// "files.autoSave": "afterDelay",
-	"editor.formatOnPaste": false,
-	"editor.formatOnType": false,
-	"editor.formatOnSave": true,
-	"editor.defaultFormatter": "esbenp.prettier-vscode",
+  "files.autoSaveDelay": 10,
+  "files.autoSave": "afterDelay",
+  "editor.formatOnPaste": false,
+  "editor.formatOnType": false,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
 
-	"typescript.inlayHints.parameterNames.enabled": "all",
-	"typescript.inlayHints.parameterTypes.enabled": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true
+  },
 
-	"editor.codeActionsOnSave": {
-		"source.fixAll": true
-	},
+  "typescript.inlayHints.parameterNames.enabled": "all",
+  "typescript.inlayHints.parameterTypes.enabled": true,
 
-	"eslint.codeAction.showDocumentation": {
-		"enable": true
-	},
+  "eslint.codeAction.showDocumentation": {
+    "enable": true
+  },
 
-	"eslint.packageManager": "yarn",
+  "eslint.packageManager": "yarn",
 
-	"eslint.validate": [
-		"javascript",
-		"javascriptreact",
-		"typescript",
-		"typescriptreact"
-	],
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
 
-	"cSpell.words": ["firestore", "gcloud", "nestjs", "usecase"],
-	"typelens.unusedcolor": "None"
+  "cSpell.words": ["firestore", "gcloud", "nestjs", "usecase"],
+  "typelens.unusedcolor": "None"
 }

@@ -1,9 +1,9 @@
 import {
-	CallHandler,
-	ExecutionContext,
-	Injectable,
-	NestInterceptor,
-	Logger,
+  CallHandler,
+  ExecutionContext,
+  Injectable,
+  NestInterceptor,
+  Logger,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
@@ -15,36 +15,36 @@ import { tap } from 'rxjs/operators';
  */
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
-	constructor(private readonly logger: Logger) {}
+  constructor(private readonly logger: Logger) {}
 
-	intercept(
-		context: ExecutionContext,
-		next: CallHandler,
-	): Observable<void> | Promise<Observable<void>> {
-		// Before the route handler
-		const now = Date.now();
-		const httpContext = context.switchToHttp();
-		const request = httpContext.getRequest();
-		const userAgent = request.get('user-agent') || 'none';
-		const { ip, method, path } = request;
+  intercept(
+    context: ExecutionContext,
+    next: CallHandler,
+  ): Observable<void> | Promise<Observable<void>> {
+    // Before the route handler
+    const now = Date.now();
+    const httpContext = context.switchToHttp();
+    const request = httpContext.getRequest();
+    const userAgent = request.get('user-agent') || 'none';
+    const { ip, method, path } = request;
 
-		this.logger.log(
-			`method=${method} userAgent=${userAgent} ip=${ip}: handler=${
-				context.getClass().name
-			}.${context.getHandler().name}`,
-			`Incoming Request on ${path}`,
-		);
+    this.logger.log(
+      `method=${method} userAgent=${userAgent} ip=${ip}: handler=${
+        context.getClass().name
+      }.${context.getHandler().name}`,
+      `Incoming Request on ${path}`,
+    );
 
-		// After the route handler
-		return next.handle().pipe<void>(
-			tap((): void => {
-				return this.logger.log(
-					`method=${method} statusCode=${
-						httpContext.getResponse().statusCode
-					} duration +${Date.now() - now}ms`,
-					`End Request for ${path}`,
-				);
-			}),
-		);
-	}
+    // After the route handler
+    return next.handle().pipe<void>(
+      tap((): void => {
+        return this.logger.log(
+          `method=${method} statusCode=${
+            httpContext.getResponse().statusCode
+          } duration +${Date.now() - now}ms`,
+          `End Request for ${path}`,
+        );
+      }),
+    );
+  }
 }

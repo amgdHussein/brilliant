@@ -1,157 +1,167 @@
 const prettierConfig = require('./.prettierrc.js');
 
 module.exports = {
-	parser: '@typescript-eslint/parser',
+  parser: '@typescript-eslint/parser',
 
-	parserOptions: {
-		project: 'tsconfig.json',
-		tsconfigRootDir: __dirname,
-		sourceType: 'module',
-	},
+  parserOptions: {
+    project: 'tsconfig.json',
+    tsconfigRootDir: __dirname,
+    sourceType: 'module',
+  },
 
-	plugins: ['prefer-arrow-functions', '@typescript-eslint/eslint-plugin'],
+  plugins: ['prefer-arrow-functions', '@typescript-eslint/eslint-plugin'],
 
-	extends: [
-		'plugin:@typescript-eslint/recommended',
-		'plugin:prettier/recommended',
-	],
+  extends: [
+    'plugin:@typescript-eslint/recommended',
+    'plugin:prettier/recommended',
+  ],
 
-	root: true,
+  root: true,
 
-	env: {
-		node: true,
-		jest: true,
-	},
+  env: {
+    node: true,
+    jest: true,
+  },
 
-	ignorePatterns: ['.eslintrc.js'],
+  ignorePatterns: ['.eslintrc.js'],
 
-	rules: {
-		//////////////
-		/// Code Format
-		'prettier/prettier': ['error', prettierConfig],
+  rules: {
+    //////////////
+    /// Code Format
+    'prettier/prettier': ['error', prettierConfig],
 
-		//////////////
-		/// General
+    //////////////
+    /// General
 
-		// Disallows explicit type declarations for variables or parameters initialized to a number, string, or boolean
-		'@typescript-eslint/no-inferrable-types': 'error',
+    // Disallows explicit type declarations for variables or parameters initialized to a number, string, or boolean
+    '@typescript-eslint/no-inferrable-types': 'error',
 
-		// Disallow the use of variables before they are defined
-		'no-use-before-define': 'off',
-		'@typescript-eslint/no-use-before-define': 'error',
+    // Disallow the use of variables before they are defined
+    'no-use-before-define': 'off',
+    '@typescript-eslint/no-use-before-define': 'error',
 
-		// Disallow unused variables
-		'no-unused-vars': 'off',
-		'@typescript-eslint/no-unused-vars': 'error',
+    // Disallow unused variables
+    'no-unused-vars': 'off',
+    '@typescript-eslint/no-unused-vars': 'error',
 
-		// Warn usage of the any type
-		'@typescript-eslint/no-explicit-any': 'warn',
+    // Warn usage of the any type
+    '@typescript-eslint/no-explicit-any': 'warn',
 
-		// Allow any typed values in template expressions.
-		'@typescript-eslint/restrict-template-expressions': 'off',
+    // Allow any typed values in template expressions.
+    '@typescript-eslint/restrict-template-expressions': 'off',
 
-		// Disallow dot notation
-		'dot-notation': 'off',
-		'@typescript-eslint/dot-notation': 'error',
+    // Disallow dot notation
+    'dot-notation': 'off',
+    '@typescript-eslint/dot-notation': 'error',
 
-		// Prevents conditionals where the type is always truthy or always falsy
-		'@typescript-eslint/no-unnecessary-condition': 'error',
+    // Prevents conditionals where the type is always truthy or always falsy
+    '@typescript-eslint/no-unnecessary-condition': 'error',
 
-		//////////////
-		/// Naming Convention
+    // Enforce consistent indentation
+    'indent': 'off',
+    '@typescript-eslint/indent': [
+      'error',
+      2,
+      {
+        SwitchCase: 1,
+      },
+    ],
 
-		'@typescript-eslint/naming-convention': [
-			'error',
+    //////////////
+    /// Naming Convention
 
-			// Enforce that all variables are either in camelCase or UPPER_CASE
-			{
-				selector: 'variable',
-				format: ['camelCase', 'UPPER_CASE'],
-			},
+    '@typescript-eslint/naming-convention': [
+      'error',
 
-			// Enforce that variable and function names are in camelCase
-			{
-				selector: ['function', 'method'],
-				format: ['camelCase'],
-				leadingUnderscore: 'allow',
-			},
+      // Enforce that all variables are either in camelCase or UPPER_CASE
+      {
+        selector: 'variable',
+        format: ['camelCase', 'UPPER_CASE'],
+      },
 
-			// Enforce that class and interface names are in PascalCase
-			{
-				selector: ['class', 'interface'],
-				format: ['PascalCase'],
-			},
+      // Enforce that variable and function names are in camelCase
+      {
+        selector: ['function', 'method'],
+        format: ['camelCase'],
+        leadingUnderscore: 'allow',
+      },
 
-			// boolean variables
-			{
-				selector: ['variable'],
-				types: ['boolean'],
-				format: ['PascalCase'],
-				prefix: ['is', 'should', 'has', 'can', 'did', 'will'],
-			},
+      // Enforce that class and interface names are in PascalCase
+      {
+        selector: ['class', 'interface'],
+        format: ['PascalCase'],
+      },
 
-			// Prefer identifying each enums member format as upper case
-			{
-				selector: 'enumMember',
-				format: ['UPPER_CASE'],
-			},
+      // boolean variables
+      {
+        selector: ['variable'],
+        types: ['boolean'],
+        format: ['PascalCase'],
+        prefix: ['is', 'should', 'has', 'can', 'did', 'will'],
+      },
 
-			// Require that interface names be prefixed with I
-			{
-				selector: ['class'],
-				modifiers: ['abstract'],
-				format: ['PascalCase'],
-				prefix: ['Abstract'],
-			},
-		],
+      // Prefer identifying each enums member format as upper case
+      {
+        selector: 'enumMember',
+        format: ['UPPER_CASE'],
+      },
 
-		//////////////
-		/// Class/ Interface/ Enum
+      // Require that interface names be prefixed with I
+      {
+        selector: ['class'],
+        modifiers: ['abstract'],
+        format: ['PascalCase'],
+        prefix: ['Abstract'],
+      },
+    ],
 
-		// Require a consistent member declaration order
-		'@typescript-eslint/member-ordering': [
-			'error',
-			{
-				classes: ['signature', 'field', 'constructor', 'method'],
-			},
-		],
+    //////////////
+    /// Class/ Interface/ Enum
 
-		// Require explicit accessibility modifiers on class properties and methods
-		'@typescript-eslint/explicit-member-accessibility': [
-			'error',
-			{
-				accessibility: 'explicit',
-				overrides: {
-					accessors: 'no-public',
-					constructors: 'no-public',
-					methods: 'no-public',
-					properties: 'no-public',
-					parameterProperties: 'explicit',
-				},
-			},
-		],
+    // Require a consistent member declaration order
+    '@typescript-eslint/member-ordering': [
+      'error',
+      {
+        classes: ['signature', 'field', 'constructor', 'method'],
+      },
+    ],
 
-		// Consistent with type definition either [interface/ type]
-		'@typescript-eslint/consistent-type-definitions': 'error',
+    // Require explicit accessibility modifiers on class properties and methods
+    '@typescript-eslint/explicit-member-accessibility': [
+      'error',
+      {
+        accessibility: 'explicit',
+        overrides: {
+          accessors: 'no-public',
+          constructors: 'no-public',
+          methods: 'no-public',
+          properties: 'no-public',
+          parameterProperties: 'explicit',
+        },
+      },
+    ],
 
-		// Prefer initializing each enums member value
-		'@typescript-eslint/prefer-enum-initializers': 'error',
+    // Consistent with type definition either [interface/ type]
+    '@typescript-eslint/consistent-type-definitions': 'error',
 
-		// Disallow unnecessary constructors
-		'no-useless-constructor': 'off',
-		'@typescript-eslint/no-useless-constructor': 'error',
+    // Prefer initializing each enums member value
+    '@typescript-eslint/prefer-enum-initializers': 'error',
 
-		//////////////
-		/// Methods
+    // Disallow unnecessary constructors
+    'no-useless-constructor': 'off',
+    '@typescript-eslint/no-useless-constructor': 'error',
 
-		// Require explicit return types on functions and class methods
-		'@typescript-eslint/explicit-function-return-type': 'error',
+    //////////////
+    /// Methods
 
-		// Requires any function or method that returns a Promise to be marked async
-		'@typescript-eslint/promise-function-async': 'error',
+    // Require explicit return types on functions and class methods
+    '@typescript-eslint/explicit-function-return-type': 'error',
 
-		// Disallow async functions which have no await expression
-		'require-await': 'off',
-		'@typescript-eslint/require-await': 'error',
-	},
+    // Requires any function or method that returns a Promise to be marked async
+    '@typescript-eslint/promise-function-async': 'error',
+
+    // Disallow async functions which have no await expression
+    'require-await': 'off',
+    '@typescript-eslint/require-await': 'error',
+  },
 };
