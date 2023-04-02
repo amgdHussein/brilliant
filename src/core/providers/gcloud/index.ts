@@ -1,1 +1,1 @@
-export { FirestoreModule } from './firestore.module';
+export * from './firestore.module';

@@ -19,7 +19,7 @@ import { Response } from 'express';
 export class HttpExceptionFilter implements ExceptionFilter<HttpException> {
   constructor(private readonly logger: Logger) {}
 
-  catch(exception: HttpException, host: ArgumentsHost): void {
+  catch(exception, host: ArgumentsHost): void {
     const context = host.switchToHttp();
     const response = context.getResponse<Response>();
     const request = context.getRequest<Request>();
@@ -36,7 +36,7 @@ export class HttpExceptionFilter implements ExceptionFilter<HttpException> {
     response.status(status).json({
       statusCode: status,
       message: exception.message,
-      cause: exception.cause?.message,
+      cause: exception.response.message || exception.cause?.message,
       method: request.method,
       path: request.url,
       timestamp: new Date().toISOString(),

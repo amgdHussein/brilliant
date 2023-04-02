@@ -42,6 +42,7 @@ README.md
 # SRC - Core
 src/core/utils
 src/core/cache
+src/core/validators
 
 # SRC - Modules
 src/modules/temp

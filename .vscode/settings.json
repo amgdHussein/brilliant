@@ -26,6 +26,6 @@
     "typescriptreact"
   ],
 
-  "cSpell.words": ["firestore", "gcloud", "nestjs", "usecase"],
+  "cSpell.words": ["firestore", "gcloud", "nestjs", "usecase", "dtos"],
   "typelens.unusedcolor": "None"
 }

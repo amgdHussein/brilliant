@@ -1,6 +1,6 @@
 export * from './configs';
 export * from './constants';
 export * from './providers';
-export * from './interfaces';
+export * from './common';
 export * from './interceptors';
 export * from './filters';

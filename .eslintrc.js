@@ -63,7 +63,12 @@ module.exports = {
       'error',
       2,
       {
-        SwitchCase: 1,
+        MemberExpression: 1,
+        ignoredNodes: [
+          'FunctionExpression > .params[decorators.length > 0]',
+          'FunctionExpression > .params > :matches(Decorator, :not(:first-child))',
+          'ClassBody.body > PropertyDefinition[decorators.length > 0] > .key',
+        ],
       },
     ],
 
@@ -82,7 +87,7 @@ module.exports = {
       // Enforce that variable and function names are in camelCase
       {
         selector: ['function', 'method'],
-        format: ['camelCase'],
+        format: ['camelCase', 'PascalCase'],
         leadingUnderscore: 'allow',
       },
 
@@ -111,7 +116,7 @@ module.exports = {
         selector: ['class'],
         modifiers: ['abstract'],
         format: ['PascalCase'],
-        prefix: ['Abstract'],
+        prefix: ['I'],
       },
     ],
 

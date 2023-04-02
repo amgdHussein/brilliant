@@ -28,7 +28,9 @@ export class FirestoreModule {
       inject: [FIRESTORE_OPTIONS_PROVIDER],
     };
 
-    const collectionProviders: Provider[] = FIRESTORE_COLLECTION_PROVIDERS.map(
+    const collectionProviders: Provider[] = Object.values(
+      FIRESTORE_COLLECTION_PROVIDERS,
+    ).map(
       (providerName: string): Provider => ({
         provide: providerName,
         useFactory: (database: Firestore): CollectionReference => {

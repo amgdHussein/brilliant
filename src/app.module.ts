@@ -4,7 +4,9 @@ import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core/constants';
 
 import { FirestoreModule } from './core/providers/gcloud';
 import { LoggingInterceptor, ResponseInterceptor } from './core/interceptors';
-import * as filters from './core/filters';
+import { HttpExceptionFilter } from './core/filters';
+
+import { ArticleModule } from './modules/article';
 
 @Module({
   imports: [
@@ -18,13 +20,15 @@ import * as filters from './core/filters';
         keyFilename: process.env.GCLOUD_KEY_FILE_NAME,
       }),
     }),
+
+    ArticleModule,
   ],
   providers: [
     Logger,
     {
       provide: APP_INTERCEPTOR,
-      scope: Scope.REQUEST,
       useClass: LoggingInterceptor,
+      scope: Scope.REQUEST,
     },
     {
       provide: APP_INTERCEPTOR,
@@ -32,7 +36,7 @@ import * as filters from './core/filters';
     },
     {
       provide: APP_FILTER,
-      useClass: filters.HttpExceptionFilter,
+      useClass: HttpExceptionFilter,
     },
   ],
 })
