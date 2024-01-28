@@ -4,8 +4,21 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
+import { FirestoreModule } from './core/providers';
+
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true })],
+  imports: [
+    // Core
+    ConfigModule.forRoot({
+      isGlobal: true,
+      cache: true,
+    }),
+    FirestoreModule,
+
+    // Modules
+    // UserModule,
+    // ArticleModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
