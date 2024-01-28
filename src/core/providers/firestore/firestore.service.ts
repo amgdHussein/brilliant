@@ -68,12 +68,12 @@ export class FirestoreService {
    * @param {any} document - The document to add to the collection.
    * @return {Promise<string>} A promise that resolves with the ID of the added document.
    */
-  public async addDoc(collection: DatabaseCollection, document: any): Promise<string> {
+  public async addDoc(collection: DatabaseCollection, document: any): Promise<any> {
     // Add the document to the specified collection
     return await this.firestore
       .collection(collection)
       .add(document)
-      .then(docRef => docRef.id);
+      .then(async docRef => await docRef.get());
   }
 
   /**
@@ -100,14 +100,20 @@ export class FirestoreService {
    * @param document - The document data to update.
    * @returns - A promise that resolves when the update is complete.
    */
-  public async updateDoc(collection: DatabaseCollection, id: string, document: any): Promise<void> {
+  public async updateDoc(collection: DatabaseCollection, id: string, document: any): Promise<any> {
     Object.keys(document).forEach(key => {
       if (document[key] === undefined) {
         document[key] = null;
       }
     });
 
-    await this.firestore.collection(collection).doc(id).update(document);
+    return await this.firestore
+      .collection(collection)
+      .doc(id)
+      .update(document)
+      .then(async () => {
+        return await this.getDoc(collection, id);
+      });
   }
 
   /**

@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
 import { FirestoreModule } from './core/providers';
+import { ArticleModule, UserModule } from './modules';
 
 @Module({
   imports: [
@@ -16,8 +17,8 @@ import { FirestoreModule } from './core/providers';
     FirestoreModule,
 
     // Modules
-    // UserModule,
-    // ArticleModule,
+    UserModule,
+    ArticleModule,
   ],
   controllers: [AppController],
   providers: [AppService],
