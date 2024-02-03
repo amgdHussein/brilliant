@@ -1,10 +1,10 @@
-import { UserRole, UserStatus } from '../../../core/constants';
+import { UserGender } from './user-type.enum';
 
 export interface User {
   id: string;
   username: string;
   email: string;
   photoUrl: string;
-  role: UserRole;
-  status: UserStatus;
+  age: number;
+  gender: UserGender;
 }

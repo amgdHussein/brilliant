@@ -51,6 +51,12 @@ module.exports = {
     'dot-notation': 'off',
     '@typescript-eslint/dot-notation': 'error',
 
+    // Enable namespace
+    '@typescript-eslint/no-namespace': 'off',
+
+    // Enable inferrable types
+    '@typescript-eslint/no-inferrable-types': 'off',
+
     // Prevents conditionals where the type is always truthy or always falsy
     // '@typescript-eslint/no-unnecessary-condition': 'error',
 
@@ -61,7 +67,7 @@ module.exports = {
       // Enforce that all variables are either in camelCase or UPPER_CASE
       {
         selector: 'variable',
-        format: ['camelCase', 'UPPER_CASE'],
+        format: ['camelCase', 'UPPER_CASE', 'PascalCase'],
       },
 
       // Boolean variables prefix

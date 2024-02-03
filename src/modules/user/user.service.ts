@@ -1,13 +1,16 @@
-import { Injectable } from '@nestjs/common';
-import { FirestoreService } from 'src/core/providers';
+import { Inject, Injectable } from '@nestjs/common';
 
-import { DatabaseCollection } from '../../core/constants';
+import { DB_COLLECTION_PROVIDER } from '../../core/constants';
+import { FirestoreCollectionService } from '../../core/providers/firestore';
 
 import { User } from './enitites';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly firestore: FirestoreService) {}
+  constructor(
+    @Inject(DB_COLLECTION_PROVIDER.USERS)
+    private readonly collection: FirestoreCollectionService<User>,
+  ) {}
 
   /**
    * Asynchronously retrieves a user by ID from the database.
@@ -15,7 +18,7 @@ export class UserService {
    * @return {Promise<User>} the user object retrieved from the database
    */
   public async getUser(id: string): Promise<User> {
-    return await this.firestore.getDoc(DatabaseCollection.USER, id);
+    return await this.collection.getDoc(id);
   }
 
   /**
@@ -23,19 +26,33 @@ export class UserService {
    * @return {Promise<User[]>} Promise that resolves with an array of User objects
    */
   public async getUsers(): Promise<User[]> {
-    return await this.firestore.getDocs(DatabaseCollection.USER);
+    return await this.collection.getDocs();
   }
 
   /**
    * Add a new user to the database.
-   * @param {User} newUser - the user object to be added
+   * @param {Partial<User>} user - the user object to be added
    * @return {Promise<string>} the ID of the newly added user
    */
   public async addUser(user: Partial<User>): Promise<User> {
-    return await this.firestore.addDoc(DatabaseCollection.USER, user);
+    return await this.collection.addDoc(user);
   }
 
-  public async updateUser(user: Partial<User>): Promise<User> {
-    return await this.firestore.updateDoc(DatabaseCollection.USER, user.id, user);
+  /**
+   * Updates a user in the database.
+   * @param {Partial<User> & { id: string }} user - the user object to update with ID
+   * @return {Promise<User>} the updated user object
+   */
+  public async updateUser(user: Partial<User> & { id: string }): Promise<User> {
+    return await this.collection.updateDoc(user);
+  }
+
+  /**
+   * Deletes a user by their ID.
+   * @param {string} id - The ID of the user to be deleted
+   * @return {Promise<User>} A promise that resolves with the deleted user
+   */
+  public async deleteUser(id: string): Promise<User> {
+    return await this.collection.deleteDoc(id);
   }
 }

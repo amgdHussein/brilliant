@@ -1,8 +1,7 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
+import { IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
-import { User } from '../enitites';
-import { UserRole, UserStatus } from '../../../core/constants';
+import { User, UserGender } from '../enitites';
 
 export class UserDto implements User {
   @IsString()
@@ -28,6 +27,7 @@ export class UserDto implements User {
   public username: string;
 
   @IsEmail()
+  @IsNotEmpty()
   @ApiProperty({
     name: 'email',
     type: String,
@@ -38,6 +38,8 @@ export class UserDto implements User {
   public email: string;
 
   @IsString()
+  @IsNotEmpty()
+  @IsOptional()
   @ApiProperty({
     name: 'photoUrl',
     type: String,
@@ -47,27 +49,25 @@ export class UserDto implements User {
   })
   public photoUrl: string;
 
-  @IsEnum(UserRole)
+  @IsEnum(UserGender)
+  @IsNotEmpty()
   @ApiProperty({
-    name: 'role',
-    enum: UserRole,
+    name: 'gender',
+    enum: UserGender,
     required: true,
-    example: UserRole.ADMIN,
-    description: 'The type of the user (Admin or User)',
+    example: UserGender.MALE,
+    description: 'The user gender type (Male or Female).',
   })
-  public role: UserRole;
+  public gender: UserGender;
 
-  @IsEnum(UserStatus)
+  @IsNumber()
+  @IsNotEmpty()
   @ApiProperty({
-    name: 'status',
-    enum: UserStatus,
+    name: 'age',
+    type: Number,
     required: true,
-    example: UserStatus.ACTIVE,
-    description: 'The user status (Active or Inactive)',
+    example: 19,
+    description: 'The user age.',
   })
-  public status: UserStatus;
+  public age: number;
 }
-
-export class AddUserDto extends OmitType(UserDto, ['id']) {}
-
-export class UpdateUserDto extends PartialType(UserDto) {}

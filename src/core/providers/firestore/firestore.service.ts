@@ -1,173 +1,210 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { CollectionReference, DocumentSnapshot, Query, WithFieldValue } from '@google-cloud/firestore';
 
-import * as admin from 'firebase-admin';
-import { CollectionReference, Query } from '@google-cloud/firestore';
+import { ObjectUtils } from '../../utils';
+import { InternalServerErrorException, NotFoundException } from '../../exceptions';
 
-import { firebaseServiceAccount } from '../../configs';
-import { DatabaseCollection } from '../../constants';
-import { QueryFilter } from '../../entities';
+import { QueryFilter, QueryOrder, QueryResponse } from './entities';
+
+const MAX_QUERY_LIMIT: number = 100;
 
 @Injectable()
-export class FirestoreService {
-  private firestore: admin.firestore.Firestore;
+export class FirestoreCollectionService<T extends { id: string }> {
+  // Convert collection name into capitalized singular name (ex. users => user)
+  private collectionName: string = this.collection.id.slice(0, -1);
 
-  constructor() {
-    admin.initializeApp({
-      credential: admin.credential.cert(firebaseServiceAccount),
-    });
-    this.firestore = admin.firestore();
-  }
+  private readonly firestoreConverter = {
+    /**
+     * Drop id and undefined fields if exists
+     * Convert object notation to dot notation
+     * @param {T} entity Entity to set/ update
+     * @return {T} The data provided to firestore
+     */
+    toFirestore(entity: Partial<T>): WithFieldValue<T> {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { id, ...entityWithoutId } = entity;
+
+      return ObjectUtils.dropUndefined(entityWithoutId);
+    },
+
+    /**
+     * Converts a Firestore document snapshot to a custom type.
+     * @param {DocumentSnapshot<T>} doc - The Firestore document snapshot to convert
+     * @return {T} The converted custom type
+     */
+    fromFirestore(doc: DocumentSnapshot<T>): T {
+      const data = doc.data() as T;
+      return { ...data, id: doc.id };
+    },
+  };
+
+  constructor(private readonly collection: CollectionReference<T>) {}
 
   /**
-   * Fetches a document from a specified collection and database.
-   * @param collection - The name of the collection.
-   * @param id - The id of the document to fetch.
-   * @returns The target document.
+   * Retrieves a document with the specified id from the collection.
+   * @param {string} id - The id of the document to retrieve
+   * @return {Promise<T>} The retrieved document
    */
-  public async getDoc(collection: DatabaseCollection, id: string): Promise<any> {
-    const documentSnapshot = await this.firestore.collection(collection).doc(id).get();
+  public async getDoc(id: string): Promise<T> {
+    const docRef = this.collection.doc(id);
+    const doc = await docRef.get();
 
-    if (documentSnapshot.exists) {
-      const data = documentSnapshot.data();
-      if (!data.id) data.id = documentSnapshot.id;
-      return data;
+    if (!doc.exists) {
+      throw new NotFoundException(`The ${this.collectionName} with specified id(${id}) does not exist!`);
     }
 
-    throw new HttpException(`The specified id (${id}) does not exist!`, HttpStatus.BAD_REQUEST);
+    return this.firestoreConverter.fromFirestore(doc);
   }
 
   /**
-   * Retrieves all documents from the specified collection.
-   * @param {string} collection - the name of the collection to retrieve documents from
-   * @return {Promise<any[]>} an array of documents from the specified collection
+   * A description of the entire function.
+   * @return {Promise<T[]>} description of return value
    */
-  public async getDocs(collection: DatabaseCollection): Promise<any[]> {
-    const snapshot = await this.firestore.collection(collection).get();
-    return snapshot.docs.map(doc => {
-      return {
-        id: doc.id,
-        ...doc.data(),
-      };
-    });
-  }
-
-  /**
-   * Generate an ID for a document in a Firestore collection.
-   * @param {DashboardCollection} collection - The collection to generate the ID for.
-   * @return {string} The generated ID for the document.
-   */
-  public generateId(collection: DatabaseCollection): string {
-    return this.firestore.collection(collection).doc().id;
-  }
-
-  /**
-   * Adds a document to the specified collection in the dashboard database.
-   * @param {DashboardCollection} collection - The collection to add the document to.
-   * @param {any} document - The document to add to the collection.
-   * @return {Promise<string>} A promise that resolves with the ID of the added document.
-   */
-  public async addDoc(collection: DatabaseCollection, document: any): Promise<any> {
-    // Add the document to the specified collection
-    return await this.firestore
-      .collection(collection)
-      .add(document)
-      .then(async docRef => await docRef.get());
-  }
-
-  /**
-   * Sets a document in the given collection of the dashboard database.
-   * @param {DashboardCollection} collection - The collection in which the document will be set.
-   * @param {any} document - The document to be set.
-   * @param {string} [id] - Optional. The ID of the document.
-   * @return {Promise<any>} - A promise that resolves to the updated document.
-   */
-  public async setDoc(collection: DatabaseCollection, document: any, id?: string): Promise<any> {
-    if (id) {
-      await this.firestore.collection(collection).doc(id).set(document);
-      return { ...document, id };
-    }
-
-    const docId = await this.addDoc(collection, document);
-    return { ...document, id: docId };
-  }
-
-  /**
-   * Update a document in the specified collection with the given id and document data.
-   * @param collection - The name of the dashboard collection.
-   * @param id - The id of the document to update.
-   * @param document - The document data to update.
-   * @returns - A promise that resolves when the update is complete.
-   */
-  public async updateDoc(collection: DatabaseCollection, id: string, document: any): Promise<any> {
-    Object.keys(document).forEach(key => {
-      if (document[key] === undefined) {
-        document[key] = null;
-      }
-    });
-
-    return await this.firestore
-      .collection(collection)
-      .doc(id)
-      .update(document)
-      .then(async () => {
-        return await this.getDoc(collection, id);
+  public async getDocs(): Promise<T[]> {
+    return await this.collection
+      .get()
+      .then(snapshot => {
+        return snapshot.docs.map(doc => this.firestoreConverter.fromFirestore(doc));
+      })
+      .catch(error => {
+        console.log('🚀 ~ getDocs ~ error:', error);
+        throw new InternalServerErrorException('Something went wrong while fetching the documents!');
       });
   }
 
   /**
-   * Retrieve a list of documents from Firestore collection based on given filters.
-   * @param collection - The name of the dashboard collection.
-   * @param filters - An array of Firestore query filters.
-   * @param limit - The number of documents required (default = 10).
-   * @param page - The start offset of documents.
-   * @returns A list of documents that meet all the filters, with a size of [limit] and starting from [page].
-   * @throws HttpException if there is an error querying the data.
+   * Adds a new document to the collection.
+   * @param {Partial<T>} entity - the entity to be added
+   * @return {Promise<T>} a promise that resolves with the added entity
    */
-  public async getDocsByQuery(collection: DatabaseCollection, filters?: QueryFilter[], limit = 10, page = 1): Promise<any[]> {
-    // Get the collection reference
-    const colRef: CollectionReference = this.firestore.collection(collection);
+  public async addDoc(entity: Partial<T>): Promise<T> {
+    const docRef = this.collection.doc();
 
-    // Initialize the query with the provided filters
-    let query: Query = this.initiateQueries(colRef, filters);
+    return await docRef
+      .set(this.firestoreConverter.toFirestore(entity))
+      .then(async () => await this.getDoc(docRef.id))
+      .catch(error => {
+        console.log('🚀 ~ addDoc ~ error:', error);
+        throw new InternalServerErrorException(`An error occurred while adding new ${this.collectionName} document!`);
+      });
+  }
 
-    // TODO: Add sort by
+  /**
+   * Add a new document to specified CollectionReference with the given data, assigning it a document ID automatically.
+   * @param {T} entity Document data to be added (Id not required)
+   * @return {Promise<T>} The new document data
+   */
+  public async setDoc(entity: T): Promise<T> {
+    const docRef = this.collection.doc(entity.id);
 
-    // Set the offset and limit for pagination
+    return await docRef
+      .set(this.firestoreConverter.toFirestore(entity))
+      .then(async () => await this.getDoc(docRef.id))
+      .catch(error => {
+        console.log('🚀 ~ setDoc ~ error:', error);
+        throw new InternalServerErrorException(`An error occurred while replacing ${this.collectionName} document!`);
+      });
+  }
+
+  /**
+   * Updates fields in the document referred to by the specified DocumentReference.
+   * The update will fail if applied to a document that does not exist.
+   * @param {T} entity Document data to be updated (Id must be specified)
+   * @return {Promise<T>} The updated document data
+   */
+  public async updateDoc(entity: Partial<T> & { id: string }): Promise<T> {
+    const flatEntity = ObjectUtils.flatten(entity);
+
+    const docRef = this.collection.doc(entity.id);
+    return await docRef
+      .update(this.firestoreConverter.toFirestore(flatEntity))
+      .then(async () => await this.getDoc(docRef.id))
+      .catch(error => {
+        console.log('🚀 ~ updateDoc ~ error:', error);
+        throw new InternalServerErrorException(`An error occurred while updating ${this.collectionName} document!`);
+      });
+  }
+
+  /**
+   * Deletes the document referred to by the specified DocumentReference.
+   * @param {string} id The ID of the document to be deleted
+   * @return {Promise<T>} The deleted document data
+   */
+  public async deleteDoc(id: string): Promise<T> {
+    const entity: T = await this.getDoc(id); // throw error if the id not exist
+
+    const docRef = this.collection.doc(id);
+    return await docRef
+      .delete()
+      .then(() => entity)
+      .catch(error => {
+        console.log('🚀 ~ deleteDoc ~ error:', error);
+        throw new InternalServerErrorException(`An error occurred while deleting ${this.collectionName} document!`);
+      });
+  }
+
+  /**
+   * Executes the query and returns the results as a QuerySnapshot.
+   * @param {number} page Pagination to prevent data overload
+   * @param {number} limit Number of entities per page
+   * @param {Array<QueryFilter>} filters - List of QueryFilter each filter has its own {field, operator, value}
+   * @param {QueryOrder} orderBy - Order object that contains {field, direction} to sort by field in specified direction
+   * @return {Promise<QueryResponse<T>>} The query documents data and meta data
+   */
+  public async query(page: number = 1, limit: number = 30, filters?: QueryFilter[], orderBy?: QueryOrder): Promise<QueryResponse<T>> {
+    limit = Math.min(limit, MAX_QUERY_LIMIT);
+
+    const query: Query<T> = this.initiateQueries(filters);
+    const data: T[] = await this.getQueries(page, limit, query, orderBy);
+    const entities: number = (await query.count().get()).data().count;
+
+    return {
+      data: data, // items
+      page: page, // current page
+      pages: Math.ceil(entities / limit), // number of pages
+      per_page: limit, // number of items per page
+      total: entities, // total number of items exists
+    };
+  }
+
+  /**
+   * Executes the query and returns the results as a list of entities.
+   * @param {number} page Pagination to prevent data overload
+   * @param {number} limit Number of entities per page
+   * @param {Query} query Firestore query object used to fetch documents
+   * @param {QueryOrder} orderBy Order object that contains {field, direction} to sort by field in specified direction
+   * @return {Array<T>} The query documents data
+   */
+  private async getQueries(page: number, limit: number, query: Query<T>, orderBy?: QueryOrder): Promise<T[]> {
+    if (orderBy) query = query.orderBy(orderBy.field, orderBy.direction);
+
     query = query.offset(limit * (page - 1));
     query = query.limit(limit);
 
-    // Execute the query and get the snapshots
     return await query
       .get()
-      .then(snapshots => {
-        // Extract the document data from the snapshots and return as an array
-        return snapshots.docs.map(doc => {
-          const data = doc.data();
-          if (!data.id) data.id = doc.id;
-          return data;
-        });
+      .then(snapshot => {
+        return snapshot.docs.map(doc => this.firestoreConverter.fromFirestore(doc));
       })
       .catch(error => {
-        throw new HttpException(error?.message ?? 'An error occurred while querying data.', HttpStatus.BAD_REQUEST);
+        console.log('🚀 ~ getQueries ~ error:', error);
+        throw new InternalServerErrorException('An error occurred while querying data!');
       });
   }
 
   /**
    * Create queries by applying filters
-   *
-   * @param {CollectionReference} collection - The collection to query on
-   * @param {QueryFilter[]} filters - List of filters to be applied (optional)
-   * @returns {Query} - The query object that meets the filters
+   * @param {Array<QueryFilter>} filters List of filters to be applied
+   * @return {Query<T>} Query object that meets filters
    */
-  private initiateQueries(collection: CollectionReference, filters: QueryFilter[] = []): Query {
-    let query: Query = collection;
+  private initiateQueries(filters?: QueryFilter[]): Query<T> {
+    let query: Query<T> = this.collection;
 
-    // Apply the filters
-    if (filters.length) {
-      for (const [field, operator, value] of filters) {
-        query = query.where(field, operator, value);
+    if (filters && filters.length > 0) {
+      for (const filter of filters) {
+        query = query.where(filter.field, filter.operator, filter.value);
       }
     }
 

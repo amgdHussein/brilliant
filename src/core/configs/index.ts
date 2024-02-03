@@ -1,1 +1,0 @@
-export * from './firebase-account-service.config';
