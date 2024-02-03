@@ -1,26 +1,26 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
 import { Observable, map } from 'rxjs';
 
-import { User } from './entities';
+import { Article } from './entities';
 
-export interface UserResponse {
-  user?: User;
-  users?: User[];
+export interface ArticleResponse {
+  article?: Article;
+  articles?: Article[];
   path: string;
   duration: string;
   method: string;
 }
 
 @Injectable()
-export class UserResponseInterceptor implements NestInterceptor {
-  public intercept(context: ExecutionContext, next: CallHandler): Observable<UserResponse> {
+export class ArticleResponseInterceptor implements NestInterceptor {
+  public intercept(context: ExecutionContext, next: CallHandler): Observable<ArticleResponse> {
     const now = Date.now();
     const httpContext = context.switchToHttp();
     const request = httpContext.getRequest();
 
-    const response = next.handle().pipe<UserResponse>(
-      map((output): UserResponse => {
-        let field: string = 'user';
+    const response = next.handle().pipe<ArticleResponse>(
+      map((output): ArticleResponse => {
+        let field: string = 'article';
         if (Array.isArray(output)) field += 's';
 
         return {

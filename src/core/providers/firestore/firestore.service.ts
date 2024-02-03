@@ -115,12 +115,14 @@ export class FirestoreCollectionService<T extends { id: string }> {
    * @return {Promise<T>} The updated document data
    */
   public async updateDoc(entity: Partial<T> & { id: string }): Promise<T> {
+    const oldEntity: T = await this.getDoc(entity.id); // throw error if the id not exist
+
     const flatEntity = ObjectUtils.flatten(entity);
 
     const docRef = this.collection.doc(entity.id);
     return await docRef
       .update(this.firestoreConverter.toFirestore(flatEntity))
-      .then(async () => await this.getDoc(docRef.id))
+      .then(() => ({ ...oldEntity, ...entity }))
       .catch(error => {
         console.log('🚀 ~ updateDoc ~ error:', error);
         throw new InternalServerErrorException(`An error occurred while updating ${this.collectionName} document!`);
@@ -209,5 +211,23 @@ export class FirestoreCollectionService<T extends { id: string }> {
     }
 
     return query;
+  }
+
+  /**
+   * Increment a field of the entity with the specified ID by the given value.
+   * @param {string} id - the ID of the entity
+   * @param {string} field - the field to be incremented
+   * @param {number} incrementValue - the value by which the field should be incremented
+   * @return {Promise<void>} a Promise that resolves when the operation is complete
+   */
+  public async incrementField(id: string, field: string, incrementValue: number): Promise<void> {
+    const entity: T = await this.getDoc(id); // throw error if the id not exist
+
+    const updatedField: any = {
+      id: id,
+      [field]: entity[field] + incrementValue,
+    };
+
+    await this.updateDoc(updatedField);
   }
 }

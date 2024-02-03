@@ -3,7 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { DB_COLLECTION_PROVIDER } from '../../core/constants';
 import { FirestoreCollectionService } from '../../core/providers/firestore';
 
-import { User } from './enitites';
+import { User } from './entities';
 
 @Injectable()
 export class UserService {

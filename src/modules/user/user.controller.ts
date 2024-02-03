@@ -28,11 +28,11 @@ export class UserController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get User by id.' })
+  @ApiOperation({ summary: 'Get user by id.' })
   @ApiParam({
     name: 'id',
     type: String,
-    example: 'K05ThPKxfugr9yYhA82Z',
+    example: '23894io23hj4890yu23h',
     required: true,
     description: 'the id of the user.',
   })
@@ -45,7 +45,7 @@ export class UserController {
   }
 
   @Post('/')
-  @ApiOperation({ summary: 'Add new User.' })
+  @ApiOperation({ summary: 'Add new user.' })
   @ApiBody({
     type: AddUserDto,
     required: true,
@@ -77,11 +77,11 @@ export class UserController {
   @Delete(':id')
   @RolesAllowed(Role.ADMIN)
   @UseGuards(RolesGuard)
-  @ApiOperation({ summary: 'Delete User by id.' })
+  @ApiOperation({ summary: 'Delete user by id.' })
   @ApiParam({
     name: 'id',
     type: String,
-    example: 'K05ThPKxfugr9yYhA82Z',
+    example: '23894io23hj4890yu23h',
     required: true,
     description: 'the id of the user.',
   })
