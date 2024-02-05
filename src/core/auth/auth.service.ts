@@ -34,7 +34,6 @@ export class AuthService {
         throw new UnauthorizedException('User not authenticated!');
       });
 
-    return claims;
     if (claims.email_verified) return claims;
     throw new UnauthorizedException('Unverified user!');
   }

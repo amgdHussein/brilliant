@@ -1,4 +1,4 @@
-import { Logger, Module, Scope, ValidationPipe } from '@nestjs/common';
+import { Logger, Module, ValidationPipe } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
@@ -55,7 +55,6 @@ import { ArticleModule, UserModule } from './modules';
     {
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,
-      scope: Scope.REQUEST,
     },
     {
       provide: APP_FILTER,
