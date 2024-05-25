@@ -47,24 +47,14 @@ Nest is [MIT licensed](LICENSE).
   │
   ├── core
   │   │
-  │   ├── configs
   │   ├── constants
-  │   ├── shared
-  │   │   ├── dtos
-  │   │   ├── entities
-  │   │   ├── exceptions/ errors
-  │   │   └── ...
-  │   │
+  │   ├── exceptions
   │   ├── decorators
+  │   ├── auth
   │   ├── providers
   │   ├── guards
-  │   ├── middlewares
-  │   ├── pipes/ validators: transformation, validation
+  │   ├── utils
   │   ├── interceptors
-  │   │   ├── logger (debugging)
-  │   │   ├── response
-  │   │   └── ...
-  │   │
   │   └── filters
   │       ├── http exceptions
   │       └── ...
